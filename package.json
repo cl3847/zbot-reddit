@@ -1,0 +1,17 @@
+{
+  "name": "zbot-reddit",
+  "version": "1.0.0",
+  "description": "r/geometrydash utility bot",
+  "main": "src/index.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "ts-node ./src/index.ts"
+  },
+  "author": "Sayajiaji",
+  "license": "ISC",
+  "dependencies": {
+    "discord.js": "^14.14.1",
+    "dotenv": "^16.4.2",
+    "snoowrap": "^1.23.0"
+  }
+}
