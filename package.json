@@ -12,6 +12,7 @@
   "dependencies": {
     "discord.js": "^14.14.1",
     "dotenv": "^16.4.2",
+    "gd.js": "^0.2.13",
     "snoowrap": "^1.23.0"
   }
 }
