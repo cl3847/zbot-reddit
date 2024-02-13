@@ -1,8 +1,9 @@
-import {Client, Collection, Events, GatewayIntentBits} from 'discord.js';
+import {Client, Collection, GatewayIntentBits} from 'discord.js';
 import * as fs from "fs";
 import * as path from "path";
 const snoowrap = require('snoowrap');
 import GD from "gd.js";
+import {CommentStream, SubmissionStream} from "snoostorm";
 require('dotenv').config();
 
 export const client = new Client({ intents: [
@@ -17,34 +18,37 @@ export const reddit = new snoowrap({
     userAgent: 'nodejs:zbot-gd:v1.0.0 (by /u/Sayajiaji)',
     clientId: 'k8ZS3NlH8g374qy3kqYnyw',
     clientSecret: process.env.REDDIT_CLIENT_SECRET,
-    refreshToken: process.env.REDDIT_REFRESH_TOKEN
+    username: 'zbot-gd',
+    password: process.env.REDDIT_PASSWORD
 });
 
-export const gd = new GD();
+export const gd = new GD({
+    logLevel: 0
+});
 
-let commands = new Collection();
-const foldersPath = path.join(__dirname, 'commands');
-const commandFolders = fs.readdirSync(foldersPath);
+let discordCommands = new Collection();
+const discordCommandsFoldersPath = path.join(__dirname, 'discord.commands');
+const discordCommandFolders = fs.readdirSync(discordCommandsFoldersPath);
 
-for (const folder of commandFolders) {
-    const commandsPath = path.join(foldersPath, folder);
+for (const folder of discordCommandFolders) {
+    const commandsPath = path.join(discordCommandsFoldersPath, folder);
     const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.ts'));
     for (const file of commandFiles) {
         const filePath = path.join(commandsPath, file);
         const command = require(filePath);
         if ('data' in command && 'execute' in command) {
-            commands.set(command.data.name, command);
+            discordCommands.set(command.data.name, command);
         } else {
             console.log(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
         }
     }
 }
 
-const eventsPath = path.join(__dirname, 'events');
-const eventFiles = fs.readdirSync(eventsPath).filter(file => file.endsWith('.ts'));
+const discordEventsPath = path.join(__dirname, 'discord.events');
+const discordEventFiles = fs.readdirSync(discordEventsPath).filter(file => file.endsWith('.ts'));
 
-for (const file of eventFiles) {
-    const filePath = path.join(eventsPath, file);
+for (const file of discordEventFiles) {
+    const filePath = path.join(discordEventsPath, file);
     const event = require(filePath);
     if (event.once) {
         client.once(event.name, (...args) => event.execute(...args));
@@ -55,3 +59,41 @@ for (const file of eventFiles) {
 
 // Log in to Discord with your client's token
 client.login(process.env.TOKEN);
+
+// Options object is a Snoowrap Listing object, but with subreddit and pollTime options
+const comments = new CommentStream(reddit, {
+    subreddit: "geometrydash",
+    limit: 10,
+    pollTime: 2000,
+});
+
+const submissions = new SubmissionStream(reddit, {
+    subreddit: "geometrydash",
+    limit: 10,
+    pollTime: 2000,
+})
+
+const commentsTest = new CommentStream(reddit, {
+    subreddit: "Sayajiaji",
+    limit: 10,
+    pollTime: 2000,
+});
+
+const submissionsTest = new SubmissionStream(reddit, {
+    subreddit: "Sayajiaji",
+    limit: 10,
+    pollTime: 2000,
+})
+
+import * as commentHandler from "./reddit.events/comments";
+import * as submissionHandler from "./reddit.events/submissions";
+
+try {
+    //comments.on("item", commentHandler.execute);
+    //submissions.on("item", submissionHandler.execute);
+    commentsTest.on("item", commentHandler.execute);
+    submissionsTest.on("item", submissionHandler.execute);
+} catch (e) {
+    console.error(e);
+}
+

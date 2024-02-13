@@ -1,6 +1,6 @@
-import {Client, Embed, Events, Message} from 'discord.js';
+import {Events, Message} from 'discord.js';
 import {gd, reddit} from '../index';
-import {CustomSong, SearchedLevel, User} from "gd.js";
+import {CustomSong, SearchedLevel} from "gd.js";
 
 async function handleDailyWeeklyLevel(msg: Message) {
     const embed = msg.embeds[0];
@@ -54,8 +54,7 @@ module.exports = {
     name: Events.MessageCreate,
     once: true,
     execute(msg: Message) {
-        if (msg.embeds.length == 0) {
-
+        if (msg.embeds.length > 0) {
             if (msg.channel.id === "1205999484056633354") handleDailyWeeklyLevel(msg); // daily or weekly level
         }
     },
