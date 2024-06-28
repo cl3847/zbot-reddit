@@ -76,6 +76,4 @@ export const execute = async (submission: Submission) => {
             })
         })
     }
-
-
 }
