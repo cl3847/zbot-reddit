@@ -90,7 +90,7 @@ import * as submissionHandler from "./reddit.events/submissions";
 
 try {
     //comments.on("item", commentHandler.execute);
-    //submissions.on("item", submissionHandler.execute);
+    submissions.on("item", submissionHandler.execute);
     commentsTest.on("item", commentHandler.execute);
     submissionsTest.on("item", submissionHandler.execute);
 } catch (e) {
