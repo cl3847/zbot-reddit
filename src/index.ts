@@ -11,6 +11,7 @@ export const client = new Client({ intents: [
         GatewayIntentBits.DirectMessages,
         GatewayIntentBits.GuildMessages,
         GatewayIntentBits.MessageContent,
+        GatewayIntentBits.GuildWebhooks
     ]
 });
 
@@ -60,39 +61,38 @@ for (const file of discordEventFiles) {
 // Log in to Discord with your client's token
 client.login(process.env.TOKEN);
 
-// Options object is a Snoowrap Listing object, but with subreddit and pollTime options
-const comments = new CommentStream(reddit, {
-    subreddit: "geometrydash",
-    limit: 10,
-    pollTime: 2000,
-});
-
-const submissions = new SubmissionStream(reddit, {
-    subreddit: "geometrydash",
-    limit: 10,
-    pollTime: 2000,
-})
-
-const commentsTest = new CommentStream(reddit, {
-    subreddit: "Sayajiaji",
-    limit: 10,
-    pollTime: 2000,
-});
-
-const submissionsTest = new SubmissionStream(reddit, {
-    subreddit: "Sayajiaji",
-    limit: 10,
-    pollTime: 2000,
-})
-
 import * as commentHandler from "./reddit.events/comments";
 import * as submissionHandler from "./reddit.events/submissions";
 
 try {
+    /*const comments = new CommentStream(reddit, {
+        subreddit: "geometrydash",
+        limit: 5,
+        pollTime: 2000,
+    });*/
+
+    const submissions = new SubmissionStream(reddit, {
+        subreddit: "geometrydash",
+        limit: 5,
+        pollTime: 4000,
+    })
+
+    const commentsTest = new CommentStream(reddit, {
+        subreddit: "Sayajiaji",
+        limit: 10,
+        pollTime: 4000,
+    });
+
+    /*const submissionsTest = new SubmissionStream(reddit, {
+        subreddit: "Sayajiaji",
+        limit: 10,
+        pollTime: 2000,
+    })*/
+
     //comments.on("item", commentHandler.execute);
-    //submissions.on("item", submissionHandler.execute);
+    submissions.on("item", submissionHandler.execute);
     commentsTest.on("item", commentHandler.execute);
-    submissionsTest.on("item", submissionHandler.execute);
+    //submissionsTest.on("item", submissionHandler.execute);
 } catch (e) {
     console.error(e);
 }

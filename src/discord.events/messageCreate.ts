@@ -1,6 +1,7 @@
 import {Events, Message} from 'discord.js';
 import {gd, reddit} from '../index';
 import {CustomSong, SearchedLevel} from "gd.js";
+import {searchLevelInfo} from "../classes/QueryResult";
 
 async function handleDailyWeeklyLevel(msg: Message) {
     const embed = msg.embeds[0];
@@ -10,37 +11,30 @@ async function handleDailyWeeklyLevel(msg: Message) {
     const numberMatch = embed.author?.name.match(/#(\d+)/);
     const number = numberMatch ? numberMatch[0] : null;
     const idMatch = embed.footer?.text.match(/Level ID: (\d+)/);
-    const id = idMatch ? idMatch[0] : null;
+    const id = idMatch ? idMatch[1] : null;
 
     if (!type || !number || !id) {
         console.error("Failed to parse daily/weekly level embed.");
         return;
     }
 
-    const levelSearch = await gd.levels.search({ query: id }, 1);
+    const searchResult = await searchLevelInfo(id);
 
-    if (!levelSearch) {
+    if (!searchResult) {
         console.error("Failed to search for level information from GD servers.");
         return;
     }
 
-    const level: SearchedLevel = levelSearch[0];
-    const creator = level.creator.accountID ? await gd.users.getByAccountID(level.creator.accountID) : null;
+    const level = searchResult.level;
+    const creator = searchResult.creator;
     const flairID = type === "Daily" ? "b891d7a0-c89d-11ee-8a06-fad7ba041385" : "b891d7a0-c89d-11ee-8a06-fad7ba041385";
 
     console.log(`Type: ${type}, Number: ${number}, ID: ${id}`);
-    console.log(level)
 
     reddit.submitSelfpost({
         title: `[${level.award.pretty.toUpperCase()}] ${type} ${number} - ${level.name} by ${creator?.username} (${level.id}) Discussion Thread`,
-        text: `**Level:** *${level.name}* by ${creator?.username}\n\n` +
-            `**ID:** ${level.id}\n\n` +
-            `**Description:**\n` +
-            `> ${level.description}\n\n` +
-            `**Difficulty:** ${level.difficulty.stars}* (${level.difficulty.level.pretty})\n\n` +
-            `**Song:** ${level.song.name} by ${level.song instanceof CustomSong ? level.song.author.name : level.song.authorName} (${level.song.id})\n` +
-            `___\n` +
-            `*This is an automated post which may be incorrect*. Use this thread for discussion about the level!`,
+        text: searchResult.toString() + `  \nUse this thread for discussion about the level!` + "\n\n___\n\n" +
+            "^This ^is ^an ^automated ^message. ^| ^by ^[sayajiaji](https://www.reddit.com/user/Sayajiaji) ^| ^[instructions](https://www.reddit.com/r/geometrydash/wiki/bot)\n\n",
         subredditName: "geometrydash",
         flairId: flairID
     }).then((post: any) => {
@@ -53,7 +47,9 @@ async function handleDailyWeeklyLevel(msg: Message) {
 module.exports = {
     name: Events.MessageCreate,
     once: true,
-    execute(msg: Message) {
+    async execute(msg: Message) {
+        //msg = await msg.channel.messages.fetch("1208931805177057331");
+        console.log(msg.embeds)
         if (msg.embeds.length > 0) {
             if (msg.channel.id === "1205999484056633354") handleDailyWeeklyLevel(msg); // daily or weekly level
         }

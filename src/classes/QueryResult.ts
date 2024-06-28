@@ -1,17 +1,15 @@
 import {CustomSong, SearchedLevel, User} from "gd.js";
 import {gd} from "../index";
 
-export async function searchLevelInfo(query: string): Promise<QueryResult | null> {
-    return gd.levels.search({query}, 1).then(async levelResult => {
-        if (!levelResult) {
-            return null;
-        }
+export async function searchLevelInfo(query: string, creator?: string): Promise<QueryResult | null> {
+    const levelResult = await gd.levels.search({query}, 1);
+    if (!levelResult) return null;
 
-        const result = new QueryResult(levelResult[0])//await levelResult[0].resolve());
-        result.creator = result.level?.creator.accountID ? await gd.users.getByAccountID(result.level.creator.accountID) : null;
+    const result = new QueryResult(levelResult[0])//await levelResult[0].resolve());
+    if (!result || !result.level) return null
+    result.creator = result.level?.creator.accountID ? await gd.users.getByAccountID(result.level.creator.accountID) : null;
 
-        return result;
-    });
+    return result;
 }
 
 export class QueryResult {
