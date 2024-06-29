@@ -6,6 +6,7 @@ import GD from "gd.js";
 import {CommentStream, SubmissionStream} from "snoostorm";
 import * as commentHandler from "./reddit.events/comments";
 import * as submissionHandler from "./reddit.events/submissions";
+import log from "./utils/logger";
 require('dotenv').config();
 
 export const client = new Client({ intents: [
@@ -43,7 +44,7 @@ export const gd = new GD({
             if ('data' in command && 'execute' in command) {
                 discordCommands.set(command.data.name, command);
             } else {
-                console.log(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
+                log.warn(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
             }
         }
     }
@@ -62,7 +63,7 @@ export const gd = new GD({
     }
 
     // Log in to Discord with your client's token
-    client.login(process.env.TOKEN);
+    await client.login(process.env.TOKEN);
 
     try {
         /*const comments = new CommentStream(reddit, {

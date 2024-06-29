@@ -1,7 +1,8 @@
 import {ReplyableContent, Submission, Listing} from "snoowrap";
-import {searchLevelInfo} from "../classes/QueryResult";
+import {searchLevelInfo} from "../models/QueryResult";
 import {client, reddit} from "../index";
 import {TextChannel} from "discord.js";
+import log from "../utils/logger";
 
 function equals(word1: string, word2: string, mistakesAllowed: number): boolean {
     if(word1 === word2) // if word1 equals word2, we can always return true
@@ -25,13 +26,13 @@ function equals(word1: string, word2: string, mistakesAllowed: number): boolean 
 async function handleSearch(query: string): Promise<string | null> {
     let replyTexts: string[] = [];
 
-    console.log("New Query: " + query)
+    log.info("New Query: " + query)
     try {
         const searchResult = await searchLevelInfo(query);
         if (searchResult) replyTexts.push(searchResult.toString());
         else return null;
     } catch(e) {
-        console.error(e);
+        log.error(e);
     }
 
     return replyTexts.join("\n\n___\n\n") + "\n\n___\n\n" + "^This ^is ^an ^automated ^message. ^| ^by ^[sayajiaji](https://www.reddit.com/user/Sayajiaji) ^| ^[instructions](https://www.reddit.com/r/geometrydash/wiki/bot)";
@@ -45,8 +46,8 @@ async function checkIfRepost(submission: Submission) {
         && post.author.name !== submission.author.name
     );
     if (match) {
-        console.log("Suspected repost found!");
-        (client.channels.cache.get("1114271325784113172") as TextChannel)
+        log.info("Suspected repost found...");
+        await (client.channels.cache.get("1114271325784113172") as TextChannel)
             .send(`**Suspected Repost:**\nRepost: [${submission.title}](https://www.reddit.com${submission.permalink})\nOriginal: [${match.title}](https://www.reddit.com${match.permalink})`)
     }
 }
@@ -55,8 +56,12 @@ export const execute = async (submission: Submission) => {
     if (submission.author.name === "zbot-gd") return;
     if (new Date().getTime() - 30000 > submission.created_utc * 1000) return; // 30 secs
 
-    // Check if post is a repost bot
-    if (!submission.is_self) checkIfRepost(submission)
+    try {
+        // Check if post is a repost bot
+        if (!submission.is_self) await checkIfRepost(submission);
+    } catch (err) {
+        log.error(err.message);
+    }
 
     const idRegex = /(?:^|(?<= )|[.?!-\(\[])id(?: is|[:=])? ?([0-9]{6,10})(?=$| |[.?!-)\]\)])/i; // id is ..., id: ...
     const bpRegex = /(?:^|(?<= ))\\?(\[|\()([0-9]{6,10})\\?(\]|\))(?=$| )/; // bracket and parens
@@ -69,11 +74,19 @@ export const execute = async (submission: Submission) => {
     else if (bpMatches !== null) replyText = await handleSearch(bpMatches[2]);
 
     if (replyText) {
-        submission.reply(replyText).then(async reply => {
-            reply.fetch().then(comment => {
-                comment.distinguish({sticky: true})
-                console.log("Sent a comment!")
+        submission.reply(replyText)
+            .then(async reply => {
+                reply.fetch()
+                    .then(comment => {
+                        comment.distinguish({sticky: true})
+                        log.success("Sent a comment!")
+                    })
+                    .catch(err => {
+                        log.error(err.message);
+                    })
             })
-        })
+            .catch(err => {
+                log.error(err.message);
+            })
     }
 }

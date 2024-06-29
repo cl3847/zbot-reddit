@@ -1,7 +1,7 @@
 import {Events, Message} from 'discord.js';
 import {gd, reddit} from '../index';
-import {CustomSong, SearchedLevel} from "gd.js";
-import {searchLevelInfo} from "../classes/QueryResult";
+import {searchLevelInfo} from "../models/QueryResult";
+import log from "../utils/logger";
 
 async function handleDailyWeeklyLevel(msg: Message) {
     const embed = msg.embeds[0];
@@ -14,14 +14,14 @@ async function handleDailyWeeklyLevel(msg: Message) {
     const id = idMatch ? idMatch[1] : null;
 
     if (!type || !number || !id) {
-        console.error("Failed to parse daily/weekly level embed.");
+        log.error("Failed to parse daily/weekly level embed.");
         return;
     }
 
     const searchResult = await searchLevelInfo(id);
 
     if (!searchResult) {
-        console.error("Failed to search for level information from GD servers.");
+        log.error("Failed to search for level information from GD servers.");
         return;
     }
 
@@ -29,7 +29,7 @@ async function handleDailyWeeklyLevel(msg: Message) {
     const creator = searchResult.creator;
     const flairID = type === "Daily" ? "b891d7a0-c89d-11ee-8a06-fad7ba041385" : "b891d7a0-c89d-11ee-8a06-fad7ba041385";
 
-    console.log(`Type: ${type}, Number: ${number}, ID: ${id}`);
+    log.info(`Type: ${type}, Number: ${number}, ID: ${id}`);
 
     reddit.submitSelfpost({
         title: `[${level.award.pretty.toUpperCase()}] ${type} ${number} - ${level.name} by ${creator?.username} (${level.id}) Discussion Thread`,
@@ -38,9 +38,9 @@ async function handleDailyWeeklyLevel(msg: Message) {
         subredditName: "geometrydash",
         flairId: flairID
     }).then((post: any) => {
-        console.log("POSTED TO REDDIT: " + post.url);
+        log.success("POSTED TO REDDIT: " + post.url);
     }).catch((err: any) => {
-        console.error(err);
+        log.error(err);
     });
 }
 
@@ -49,9 +49,12 @@ module.exports = {
     once: true,
     async execute(msg: Message) {
         //msg = await msg.channel.messages.fetch("1208931805177057331");
-        console.log(msg.embeds)
         if (msg.embeds.length > 0) {
-            if (msg.channel.id === "1205999484056633354") handleDailyWeeklyLevel(msg); // daily or weekly level
+            try {
+                if (msg.channel.id === "1205999484056633354") await handleDailyWeeklyLevel(msg); // daily or weekly level
+            } catch (err) {
+                log.error(err.message)
+            }
         }
     },
 };

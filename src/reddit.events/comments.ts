@@ -1,5 +1,5 @@
 import {Comment} from "snoowrap";
-import {searchLevelInfo} from "../classes/QueryResult";
+import {searchLevelInfo} from "../models/QueryResult";
 
 async function handleSearch(queries: string[]): Promise<string> {
     let replyTexts: string[] = [];
