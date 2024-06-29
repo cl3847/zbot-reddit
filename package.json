@@ -5,7 +5,8 @@
   "main": "src/index.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "ts-node ./src/index.ts"
+    "start": "tsx ./src/index.ts",
+    "pm2": "pm2 start npm -- run start --watch"
   },
   "author": "Sayajiaji",
   "license": "ISC",
@@ -13,6 +14,9 @@
     "discord.js": "^14.14.1",
     "dotenv": "^16.4.2",
     "gd.js": "^0.2.13",
-    "snoowrap": "^1.23.0"
+    "snoostorm": "^1.5.2",
+    "snoowrap": "^1.23.0",
+    "tsx": "^4.11.0",
+    "typescript": "^5.4.5"
   }
 }
