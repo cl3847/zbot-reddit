@@ -5,5 +5,3 @@ export type LoggerType = {
     success(...args: any[]): void;
     info(...args: any[]): void;
 };
-
-export default LoggerType;

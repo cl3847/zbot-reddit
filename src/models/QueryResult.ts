@@ -1,7 +1,8 @@
-import {CustomSong, SearchedLevel, User} from "gd.js";
-import {gd} from "../index";
+import type {SearchedLevel} from "gd.js/esm/entities/level.d.ts";
+import type { User } from "gd.js/esm/entities/user.d.ts";
+import {gd} from "../utils/gd.ts";
 
-export async function searchLevelInfo(query: string, creator?: string): Promise<QueryResult | null> {
+export async function searchLevelInfo(query: string): Promise<QueryResult | null> {
     const levelResult = await gd.levels.search({query}, 1);
     if (!levelResult) return null;
 
@@ -25,11 +26,14 @@ export class QueryResult {
     }
 
     toString(): string {
+        const song = this.level.song;
+        const songAuthor = 'author' in song ? song.author.name : song.authorName;
+
         return `**Level:** *${this.level.name}* by ${this.getCreatorUsername()} (${this.level.id})  \n` +
             `**Description:**  \n` +
             `> ${this.level.description}\n\n` +
             `**Difficulty:** ${this.level.difficulty.stars}* (${this.level.difficulty.level.pretty})  \n` +
             `**Stats:** ${this.level.stats.downloads} downloads | ${this.level.stats.likes} likes | ${this.level.stats.length.pretty}  \n` +
-            `**Song:** *${this.level.song.name}* by ${this.level.song instanceof CustomSong ? this.level.song.author.name : this.level.song.authorName} (${this.level.song.id})  \n`;
+            `**Song:** *${this.level.song.name}* by ${songAuthor} (${this.level.song.id})  \n`;
     }
 }
