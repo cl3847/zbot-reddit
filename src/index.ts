@@ -5,7 +5,7 @@ import "dotenv/config"
 import logger from "./utils/logger.js";
 
 // list of subreddits to monitor for new submissions
-const SUBREDDITS_MONITOR_POSTS: string[] = ["Sayajiaji"]
+const SUBREDDITS_MONITOR_POSTS: string[] = ["geometrydash"]
 
 function main() {
     try {
