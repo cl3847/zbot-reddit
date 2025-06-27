@@ -36,7 +36,7 @@ function findId(s: string): string | null {
 
 export const execute = async (submission: Submission) => {
     if (submission.author.name === process.env.REDDIT_USERNAME) return; // return if the submission is made by the bot itself, probably never a concern but just in case
-    if (new Date().getTime() - 30000 > submission.created_utc * 1000) return; // make sure the submission is recent (within 30 seconds)
+    if (new Date().getTime() - 60000 > submission.created_utc * 1000) return; // make sure the submission is recent (within 60 seconds)
 
     log.info(`New submission detected: [${submission.id}] | title: ${submission.title}`);
 
